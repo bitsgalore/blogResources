@@ -3,58 +3,7 @@
 import os
 import sys
 import glob
-import csv
 import urllib.request
-
-
-def processBlog(urlDidl, csvOut):
-    """Process one DIDL and write results to csvOut"""
-
-    # Parse DIDL
-    urls = parseDidl(urlDidl)
-    
-    # Iterate over urls
-    for inURL in urls:
-        try:
-            # Open URL location, response to file-like object 'response'                         
-            response = urllib.request.urlopen(inURL)
-            
-            # Status code
-            httpStatus = str(response.getcode())
-
-            # Output URL (can be different from inURL in case of redirection)
-            outURL=response.geturl()
-
-            # HTTP headers
-            headers = response.info()
-
-            # Data (i.e. the actual object that is retrieved)
-            data = response.read()
-
-            # Content-Disposition header
-            contentDisposition = headers['Content-Disposition']
-            if not contentDisposition: 
-                contentDisposition = "n/a"
-                
-            # Content-Type header
-            contentType = headers['Content-Type']
-            if not contentType:
-                contentType = "n/a"
-
-        except urllib.error.HTTPError as e:
-            httpStatus = str(e)
-            outURL = "n/a"
-            contentDisposition = "n/a"
-            contentType = "n/a"
-
-        except urllib.error.URLError as e:
-            httpStatus = str(e)
-            outURL = "n/a"
-            contentDisposition = "n/a"
-            contentType = "n/a"
-
-        # Write record to output file
-        csvOut.writerow([inURL,httpStatus, outURL,contentDisposition, contentType])
 
 def main():
 
@@ -101,33 +50,9 @@ def main():
             originStr = '\n<hr>\nOriginally published at the [KB Research blog](' + urlKB + ')\n'
         
         if originStr != '':
-            print(postName, originStr)
-
-    """
-
-    # Open input file (one DIDL link per line)
-    dirPosts = sys.argv[1]
-    fIn = open(fileIn, "r", encoding="utf-8")
-    # Content to list (each item represents 1 DIDL URL)
-    didls = fIn.read().splitlines()
-    fIn.close()
-
-     # Open output file and create CSV writer object
-    fileOut = sys.argv[2]
-    fOut = open(fileOut, "w", encoding="utf-8")
-    csvOut = csv.writer(fOut, lineterminator='\n')
-    
-    # Write header line to output file
-    csvOut.writerow(["URLIn", "httpStatus", "URLOut", "Content-Disposition", "Content-Type"])
-
-    # Iterate over didl files
-    for didl in didls:
-        if didl != "":
-            processDIDL(didl,csvOut)
-
-    # Close output file
-    fOut.close()
-    """
+            # Append string to blog
+            with open(post, "a") as fPost:
+                fPost.write(originStr)
 
 if __name__ == "__main__":
     main()
